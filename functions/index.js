@@ -1,3 +1,4 @@
+//Write in node6
 const functions = require('firebase-functions');
 const admin = require('firebase-admin') //import adminsdk
 admin.initializeApp();    //to use admin inital application
@@ -47,12 +48,9 @@ app.get('/reacts', (req, res) => {
 //     .catch(err => console.error(err))
 // });
 //test by copy url endpoint in postman GET route send see reacts from db works commit
-
+//http://localhost:5000/reacttomyreactapp/us-central1/api/reacts
 //CREATE ROUTE
-exports.createReact = functions.https.onRequest((req, res) => {
-    if(req.method !== 'POST'){
-        return res.status(400).json({error: 'Method not allowed'}) //this method allows to see error code instead of 404 server error when hitting wrong route
-    }
+app.post('/react', (req, res) => {
     const newReact = {
         body: req.body.body, //for postman
         userHandle: req.body.userHandle,
@@ -61,7 +59,7 @@ exports.createReact = functions.https.onRequest((req, res) => {
     admin.firestore()
         .collection('reacts')
         .add(newReact)
-        .then(doc => {
+        .then((doc) => {
             res.json({message: `Document ${doc.id} created Sucessfully!`});
         })
         .catch(err => {
@@ -69,6 +67,28 @@ exports.createReact = functions.https.onRequest((req, res) => {
             console.error(err);
         });
 });
+// get url http://localhost:5000/reacttomyreactapp/us-central1/api/react
+//create a new react in postman
+//exports.createReact = functions.https.onRequest((req, res) => {
+    // if(req.method !== 'POST'){
+    //     return res.status(400).json({error: 'Method not allowed'}) //this method allows to see error code instead of 404 server error when hitting wrong route
+    // }
+    // const newReact = {
+    //     body: req.body.body, //for postman
+    //     userHandle: req.body.userHandle,
+    //     createdAt: admin.firestore.Timestamp.fromDate(new Date())
+    // };
+    // admin.firestore()
+    //     .collection('reacts')
+    //     .add(newReact)
+    //     .then(doc => {
+    //         res.json({message: `Document ${doc.id} created Sucessfully!`});
+    //     })
+    //     .catch(err => {
+    //         res.status(500).json({error:'Oh no! Something went wrong!'});
+    //         console.error(err);
+    //     });
+//});
 //run firebase serve to test in postman with post req, body json
     //{"body": "New React", "userHandle":"Jae"}
     //check in firebase db, if server error occurs due to route errors
