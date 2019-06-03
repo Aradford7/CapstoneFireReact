@@ -133,6 +133,7 @@ app.post('/signup', (req, res) => {
         username: req.body.username, //handle
     };
     //TODO: validate data (firebase stuff)
+    let token, userId;
     db.doc(`/users/${newUser.username}`).get() //fx to check if username already exist
     .then(doc => {
         if(doc.exists){
@@ -144,10 +145,21 @@ app.post('/signup', (req, res) => {
         }
     }) //chain promise for access token so user cna request more data
     .then(data =>{
+        userId = data.user.uid;
         return data.user.getIdToken();
     })
-    .then(token => {
-        return res.status(201).json({token}); 
+    .then(idToken => {
+        token = idToken;
+        const userCredentials = {
+            username: newUser.username,
+            email: newUser.email,
+            createdAt: new Date().toISOString(),
+            userId
+        };
+        return db.doc(`/users/${newUser.username}`).set(userCredentials); 
+    })
+    .then (() => {
+        return res.status(201).json({token}); //delete entire collections check in postman
     })
     // SHOuld return a token when postman create a new user
         // works see token
