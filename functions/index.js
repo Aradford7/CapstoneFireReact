@@ -19,6 +19,8 @@ const firebase = require('firebase');
         appId: "1:388845875731:web:d93b7fa3f02f69e7"
       };
 firebase.initializeApp(config);
+
+const db = admin.firestore(); //where we need firestore use db.
  //pass in config stuff from firebase console
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -33,7 +35,7 @@ firebase.initializeApp(config);
 //GET ROUTE
 app.get('/reacts', (req, res) => {
       admin
-      .firestore()
+      .db()
       .collection('reacts')
       .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
       .get()//need access to db with admin sdk by importing on top
@@ -131,17 +133,40 @@ app.post('/signup', (req, res) => {
         username: req.body.username, //handle
     };
     //TODO: validate data (firebase stuff)
-    firebase
-    .auth()
-    .createUserWithEmailAndPassword(newUser.email, newUser.password)
-    .then((data) => {
-        return res
-        .status(201)
-        .json({message: `user ${data.user.uid} signed up sucessfully!`});
+    db.doc(`/users/${newUser.username}`).get() //fx to check if username already exist
+    .then(doc => {
+        if(doc.exists){
+            return res.status(400).json({username: 'This username is already taken'});
+        }else{
+            return firebase
+        .auth()
+        .createUserWithEmailAndPassword(newUser.email, newUser.password)
+        }
+    }) //chain promise for access token so user cna request more data
+    .then(data =>{
+        return data.user.getIdToken();
     })
+    .then(token => {
+        return res.status(201).json({token}); 
+    })
+    // SHOuld return a token when postman create a new user
+        // works see token
+        //user already exist see username already exist
+    // firebase
+    // .auth()
+    // .createUserWithEmailAndPassword(newUser.email, newUser.password)
+    // .then((data) => {
+    //     return res
+    //     .status(201)
+    //     .json({message: `user ${data.user.uid} signed up sucessfully!`});
+    // })
     .catch(err => {
         console.error(err);
+        if (err.code == 'auth/email-already-in-use'){
+            return res.status(400).json({email: 'Email is already in use'}); 
+        }else{
         return res.status(500).json({error: err.code});
+        }
     });
 });
 //check on postman if created user http://localhost:5000/reacttomyreactapp/us-central1/api/signup
@@ -151,7 +176,10 @@ app.post('/signup', (req, res) => {
 // 	"confirmPassword": "123",
 // 	"username": "Pikachu"
 // }
-
+// delete nodepacks and install latest firebase now! =.= ugh
+    //pass must be good ish commit!
+    //got to firebase authenticaltion see user and id copy uid
+    //add to database!
 // export api at bottom! or bad req =.=
 //https://baseurl.com/api/ 
 exports.api = functions.https.onRequest(app); 
