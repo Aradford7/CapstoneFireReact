@@ -22,4 +22,27 @@ exports.getReacts = functions.https.onRequest((req, res) =>{
     })
     .catch(err => console.error(err))
 });
-//test by copy url endpoint in postman GET route send see reacts from db
+//test by copy url endpoint in postman GET route send see reacts from db works commit
+
+//CREATE ROUTE
+exports.createReact = functions.https.onRequest((req, res) => {
+    const newReact = {
+        body: req.body.body, //for postman
+        userHandle: req.body.userHandle,
+        createdAt: admin.firestore.Timestamp.fromDate(new Date())
+    };
+    admin.firestore()
+        .collection('reacts')
+        .add(newReact)
+        .then(doc => {
+            res.json({message: `Document ${doc.id} created Sucessfully!`});
+        })
+        .catch(err => {
+            res.status(500).json({error:'Oh no! Something went wrong!'});
+            console.error(err);
+        });
+});
+//run firebase serve to test in postman with post req, body json
+    //{"body": "New React", "userHandle":"Jae"}
+    //check in firebase db, if server error occurs due to route errors
+    //works commit!
