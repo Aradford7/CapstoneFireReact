@@ -1,9 +1,25 @@
-//Write in node6
+
 const functions = require('firebase-functions');
 const admin = require('firebase-admin') //import adminsdk
+const app = require('express')();
 admin.initializeApp();    //to use admin inital application
-const express = require('express'); //require and init express rewrite routes
-const app = express();
+//one line import express
+// const express = require('express'); //require and init express rewrite routes
+// const app = express();
+//npm i --save firebase in function folder then initalize it below
+
+const firebase = require('firebase');
+    const config = {
+        apiKey: "AIzaSyDNlgU-vShGYd69xVRO5Jvi3bLBkOOgkxQ",
+        authDomain: "reacttomyreactapp.firebaseapp.com",
+        databaseURL: "https://reacttomyreactapp.firebaseio.com",
+        projectId: "reacttomyreactapp",
+        storageBucket: "reacttomyreactapp.appspot.com",
+        messagingSenderId: "388845875731",
+        appId: "1:388845875731:web:d93b7fa3f02f69e7"
+      };
+firebase.initializeApp(config);
+ //pass in config stuff from firebase console
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 
@@ -16,8 +32,8 @@ const app = express();
 //3. try to fetch these from db with postman
 //GET ROUTE
 app.get('/reacts', (req, res) => {
-      admin.
-      firestore()
+      admin
+      .firestore()
       .collection('reacts')
       .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
       .get()//need access to db with admin sdk by importing on top
@@ -105,6 +121,36 @@ app.post('/react', (req, res) => {
     //works commit!
 
 //now install express npm i --save express import it in
+
+//SIGN UP ROUTE
+app.post('/signup', (req, res) => {
+    const newUser = {
+        email: req.body.email,
+        password: req.body.password,
+        confirmPassword: req.body.confirmPassword,
+        username: req.body.username, //handle
+    };
+    //TODO: validate data (firebase stuff)
+    firebase
+    .auth()
+    .createUserWithEmailAndPassword(newUser.email, newUser.password)
+    .then((data) => {
+        return res
+        .status(201)
+        .json({message: `user ${data.user.uid} signed up sucessfully!`});
+    })
+    .catch(err => {
+        console.error(err);
+        return res.status(500).json({error: err.code});
+    });
+});
+//check on postman if created user http://localhost:5000/reacttomyreactapp/us-central1/api/signup
+// //{
+// 	"email":"user@email.com",
+// 	"password": "123",
+// 	"confirmPassword": "123",
+// 	"username": "Pikachu"
+// }
 
 // export api at bottom! or bad req =.=
 //https://baseurl.com/api/ 
