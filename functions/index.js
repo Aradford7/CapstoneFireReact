@@ -19,12 +19,19 @@ app.get('/reacts', (req, res) => {
       admin.
       firestore()
       .collection('reacts')
+      .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
       .get()//need access to db with admin sdk by importing on top
       .then(data =>{
         let reacts = [];
-        data.forEach(doc => {
-            reacts.push(doc.data());
-        });  //promise to get data and store in arr called reacts after forLoop
+        data.forEach((doc) => {
+            reacts.push({
+                reactId: doc.id,
+                body: doc.data().body,
+                userHandle: doc.data().userHandle,
+                createdAt: doc.data().createdAt  //get with get request and api/screams see update and scream obj id
+                //we got reacts updated in postman now organize by latest using time
+            });
+        });  
         return res.json(reacts);
     })
     .catch(err => console.error(err));
@@ -54,7 +61,9 @@ app.post('/react', (req, res) => {
     const newReact = {
         body: req.body.body, //for postman
         userHandle: req.body.userHandle,
-        createdAt: admin.firestore.Timestamp.fromDate(new Date())
+        //createdAt: admin.firestore.Timestamp.fromDate(new Date()) get rid of this cuz show nanoseconds write
+        createdAt: new Date().toISOString() //iso is fx will make in string
+        //create dbschema.js
     };
     admin.firestore()
         .collection('reacts')
@@ -69,6 +78,7 @@ app.post('/react', (req, res) => {
 });
 // get url http://localhost:5000/reacttomyreactapp/us-central1/api/react
 //create a new react in postman
+    //sucess!!! commit!
 //exports.createReact = functions.https.onRequest((req, res) => {
     // if(req.method !== 'POST'){
     //     return res.status(400).json({error: 'Method not allowed'}) //this method allows to see error code instead of 404 server error when hitting wrong route
