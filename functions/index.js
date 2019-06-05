@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
-const admin = require('firebase-admin') //import adminsdk
+// const admin = require('firebase-admin') //import adminsdk
 const app = require('express')();
-admin.initializeApp();    //to use admin inital application
+// admin.initializeApp();    //to use admin inital application
 //one line import express
 // const express = require('express'); //require and init express rewrite routes
 // const app = express();
@@ -19,7 +19,7 @@ const firebase = require('firebase');
       };
 firebase.initializeApp(config);
 
-const db = admin.firestore(); //where we need firestore use db.
+// const db = admin.firestore(); //where we need firestore use db.
  //pass in config stuff from firebase console
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -33,30 +33,31 @@ const db = admin.firestore(); //where we need firestore use db.
 //3. try to fetch these from db with postman
 
 //GET ROUTE
-app.get('/reacts', (req, res) => {
-      admin
-      .db()
-      .collection('reacts')
-      .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
-      .get()//need access to db with admin sdk by importing on top
-      .then(data =>{
-        let reacts = [];
-        data.forEach((doc) => {
-            reacts.push({
-                reactId: doc.id,
-                body: doc.data().body,
-                userHandle: doc.data().userHandle,
-                createdAt: doc.data().createdAt  //get with get request and api/reacts see update and react obj id
-                //we got reacts updated in postman now organize by latest using time
-            });
-        });  
-        return res.json(reacts);
-    })
-    .catch((err) => {
-        console.error(err);
-        res.status(500).json({error: err.code});
-    });
-});
+app.get('/reacts',);
+//  (req, res) => {
+//       admin
+//       .db()
+//       .collection('reacts')
+//       .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
+//       .get()//need access to db with admin sdk by importing on top
+//       .then(data =>{
+//         let reacts = [];
+//         data.forEach((doc) => {
+//             reacts.push({
+//                 reactId: doc.id,
+//                 body: doc.data().body,
+//                 userHandle: doc.data().userHandle,
+//                 createdAt: doc.data().createdAt  //get with get request and api/reacts see update and react obj id
+//                 //we got reacts updated in postman now organize by latest using time
+//             });
+//         });  
+//         return res.json(reacts);
+//     })
+//     .catch((err) => {
+//         console.error(err);
+//         res.status(500).json({error: err.code});
+//     });
+// });
 
     //this will make multiple routes
     //need to tell firebase this is container for all our getroutes
