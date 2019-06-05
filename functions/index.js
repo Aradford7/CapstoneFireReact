@@ -4,8 +4,10 @@ const FBAuth = require('./util/fbAuth')
 
 //REFACTOR ROUTES
 //GET allReacts
-
-const {getAllReacts, postOneReact} = require('./handlers/reacts'); // ref to get route
+const {
+    getAllReacts, 
+    postOneReact,
+    getReact} = require('./handlers/reacts'); // ref to get route
 const {
     signup, 
     login, 
@@ -44,19 +46,22 @@ const {
 app.get('/reacts', getAllReacts);
 //POST route
 app.post('/react', FBAuth, postOneReact);
-//POST route for images
-app.post('/user/image', FBAuth, uploadImage);
-//POST route for userData
-app.post('/user', FBAuth, addUserDetails);
-//GET route for userData
-app.get('/user', FBAuth, getAuthenticatedUser);
+//GET 1 react
+app.get('/react/:reactId', getReact);
+//TODO: delete react, like a react, unlike a react, comment on react
+
 
 //USER ROUTES
 //SIGNUP route
 app.post('/signup', signup); 
 //LOGIN route
 app.post('/login', login);
-//IMAGE route
+//POST route for images
+app.post('/user/image', FBAuth, uploadImage);
+//POST route for userData
+app.post('/user', FBAuth, addUserDetails);
+//GET route for userData
+app.get('/user', FBAuth, getAuthenticatedUser);
 
 
 //API
