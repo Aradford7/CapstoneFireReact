@@ -4,15 +4,10 @@ const FBAuth = require('./util/fbAuth')
 
 //REFACTOR ROUTES
 //GET allReacts
-<<<<<<< HEAD
 const {
     getAllReacts, 
     postOneReact,
     getReact} = require('./handlers/reacts'); // ref to get route
-=======
-
-const {getAllReacts, postOneReact} = require('./handlers/reacts'); // ref to get route
->>>>>>> master
 const {
     signup, 
     login, 
