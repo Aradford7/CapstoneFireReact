@@ -1,11 +1,11 @@
-const {db, admin} = require ('../util/admin') //import db  
+const {db, admin} = require ('../util/admin') 
 
 
-//GET ROUTE/REACTS
+//GET ROUTE/reacts
 exports.getAllReacts =  (req, res) => {
   db.collection('reacts')
-    .orderBy('createdAt', 'desc') //order by descending timestamp! get latest first
-    .get()//need access to db with admin sdk by importing on top
+    .orderBy('createdAt', 'desc') 
+    .get()
     .then(data =>{
       let reacts = [];
       data.forEach((doc) => {
@@ -13,8 +13,8 @@ exports.getAllReacts =  (req, res) => {
               reactId: doc.id,
               body: doc.data().body,
               userHandle: doc.data().userHandle,
-              createdAt: doc.data().createdAt  //get with get request and api/reacts see update and react obj id
-              //we got reacts updated in postman now organize by latest using time
+              createdAt: doc.data().createdAt  
+              
           });
       });  
       return res.json(reacts);
@@ -31,11 +31,10 @@ exports.postOneReact = (req, res) => {
         return res.status(400).json({body: 'Body must not be empty.'});
     }
     const newReact = {
-        body: req.body.body, //for postman
+        body: req.body.body, 
         userHandle: req.user.username,
-        //createdAt: admin.firestore.Timestamp.fromDate(new Date()) get rid of this cuz show nanoseconds write
-        createdAt: new Date().toISOString() //iso is fx will make in string
-        //create dbschema.js
+        createdAt: new Date().toISOString() 
+    
     };
    
       db.collection('reacts')
