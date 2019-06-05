@@ -13,7 +13,7 @@ const isEmpty = (string) =>  {
     }   
 };
 
-//import this to users.js
+
 exports.validateSignUpData = (data) => {
     let errors = {};
 
@@ -26,14 +26,14 @@ exports.validateSignUpData = (data) => {
     if(isEmpty(data.password))errors.password = 'Must not be empty.'
     if(data.password !== data.confirmPassword) errors.confirmPassword = 'Password must match';
     if(isEmpty(data.username))errors.username = 'Must not be empty.';
-    //check for errors or if valid before procceding
+   
         return{
             errors,
             valid: Object.keys(errors).length === 0 ? true : false
     }
 }
 
-//
+
 
 exports.validateLoginData = (data) => {
     let errors = {};
