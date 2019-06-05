@@ -14,7 +14,7 @@ exports.signup = (req, res) => {
         password: req.body.password,
         confirmPassword: req.body.confirmPassword,
         username: req.body.username, 
-    };
+    }
 
     // let errors = {};
 
@@ -35,6 +35,8 @@ exports.signup = (req, res) => {
     const {valid, errors} = validateSignUpData(newUser);
 
     if (!valid) return res.status(400).json(errors); //conditional checking if valid
+
+    const noImg = 'no-img.png'
 
     let token, userId;
     db.doc(`/users/${newUser.username}`)
@@ -58,8 +60,9 @@ exports.signup = (req, res) => {
             username: newUser.username,
             email: newUser.email,
             createdAt: new Date().toISOString(),
+            imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
             userId
-        };
+        }
         return db.doc(`/users/${newUser.username}`).set(userCredentials); 
     })
     .then (() => {
@@ -88,6 +91,7 @@ exports.signup = (req, res) => {
 
 exports.login = (req,res) => {
     const user = {
+        //username: req.body.username,
         email: req.body.email,
         password: req.body.password
     };
@@ -134,25 +138,28 @@ exports.uploadImage = (req,res) => {
     const fs = require('fs');
 
 
-
     const busboy = new BusBoy({headers:req.headers}); //need all the callbacks mainly file encoding mimetype
 
-    let imageFileName;
     let imageToBeUploaded = {};
+    let imageFileName;
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-        console.log(fieldname);
-        console.log(filename);
-        console.log(mimetype);
+        console.log(fieldname, filename, encoding,mimetype);
         //extract by getting the extention jpeg or png
+        if (mimetype !== 'image/jpeg' && mimetype !== 'image/png'){
+            return res.status(400).json({error: 'Wrong file type. Try a different type.'})
+        }
         const imageExtension = filename.split('.')[filename.split('.').length -1]; //-1 for last file index
         imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
-        const filepath = path.json(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
+        const filepath = path.join(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
         imageToBeUploaded = {filepath, mimetype};
         file.pipe(fs.createWriteStream(filepath));
     });
     busboy.on('finish', () => {
-        admin.storage().bucket().upload(imageToBeUploaded.filepath, {
+        admin
+            .storage()
+            .bucket()
+            .upload(imageToBeUploaded.filepath, {
             resumeable: false,
             metadata: {
                 metadata: {
@@ -162,15 +169,18 @@ exports.uploadImage = (req,res) => {
         })
         .then(() => {
             const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
-            return db.doc(`/users/${req.user.username}`).update({imageUrl}) //imageUrl = field:val
+            return db.doc(`/users/${req.user.username}`).update({imageUrl}); //imageUrl = field:val
         })
         .then(() => {
             return res.json({message: 'Image uploaded successfully'});
         })
         .catch(err => {
             console.error(err);
-            return res.status(500).json({error: err.code});
+            return res.status(500).json({error: 'Something went wrong. Uploading image has failed.'});
         })
-    })
-} // image is stored to firebase via config script fb gives, need alt=media so u can see pic instead of it being downloaded to pc
+    });
+    busboy.end(req.rawBody);
+}; // image is stored to firebase via config script fb gives, need alt=media so u can see pic instead of it being downloaded to pc
     //add to user db, will need key val imgUrl
+
+//TODO add default blank avatar pic, manual upload fb storage, activate storage, upload file, call it no-img.png

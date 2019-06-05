@@ -52,7 +52,7 @@ app.post('/signup', signup);
 //LOGIN route
 app.post('/login', login);
 //IMAGE route
-app.post('/user/image', uploadImage)
+app.post('/user/image', FBAuth, uploadImage)
 
 //
 //  (req, res) => {
