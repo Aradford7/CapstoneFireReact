@@ -1,4 +1,4 @@
-const {db} =  require('../util/admin');
+const {db, admin} =  require('../util/admin');
 
 const config = require('../util/config');
 
@@ -124,3 +124,53 @@ exports.login = (req,res) => {
             else return res.status(500).json({error: err.code});
         });
 }
+
+
+//import npm i --save busboy for avatar upload img
+exports.uploadImage = (req,res) => {
+    const BusBoy = require('busboy');
+    const path = require('path');
+    const os =  require('os');
+    const fs = require('fs');
+
+
+
+    const busboy = new BusBoy({headers:req.headers}); //need all the callbacks mainly file encoding mimetype
+
+    let imageFileName;
+    let imageToBeUploaded = {};
+
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        console.log(fieldname);
+        console.log(filename);
+        console.log(mimetype);
+        //extract by getting the extention jpeg or png
+        const imageExtension = filename.split('.')[filename.split('.').length -1]; //-1 for last file index
+        imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
+        const filepath = path.json(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
+        imageToBeUploaded = {filepath, mimetype};
+        file.pipe(fs.createWriteStream(filepath));
+    });
+    busboy.on('finish', () => {
+        admin.storage().bucket().upload(imageToBeUploaded.filepath, {
+            resumeable: false,
+            metadata: {
+                metadata: {
+                    contentType: imageToBeUploaded.mimetype
+                }
+            }
+        })
+        .then(() => {
+            const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
+            return db.doc(`/users/${req.user.username}`).update({imageUrl}) //imageUrl = field:val
+        })
+        .then(() => {
+            return res.json({message: 'Image uploaded successfully'});
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({error: err.code});
+        })
+    })
+} // image is stored to firebase via config script fb gives, need alt=media so u can see pic instead of it being downloaded to pc
+    //add to user db, will need key val imgUrl
