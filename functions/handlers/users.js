@@ -5,9 +5,10 @@ const config = require('../util/config');
 const firebase = require('firebase');
 firebase.initializeApp(config)
 
-const {validateSignUpData, validateLoginData} = require('../util/validatorshelper')
+const {validateSignUpData, validateLoginData, reduceUserDetails} = require('../util/validatorshelper')
 
 
+//sign up for user
 exports.signup = (req, res) => {
     const newUser = {
         email: req.body.email,
@@ -89,6 +90,7 @@ exports.signup = (req, res) => {
     });
 }
 
+//Login for user
 exports.login = (req,res) => {
     const user = {
         //username: req.body.username,
@@ -97,7 +99,7 @@ exports.login = (req,res) => {
     };
 
     //add valid fx  by destructuring
-    const {valid, errors} = validateLoginData(User);
+    const {valid, errors} = validateLoginData(user);
 
     if (!valid) return res.status(400).json(errors); //conditional checking if valid
 
@@ -130,6 +132,24 @@ exports.login = (req,res) => {
 }
 
 
+
+//Add userDetails fx (bio,location,website,github,username,email)
+exports.addUserDetails = (req, res) => {
+    let userDetails = reduceUserDetails(req.body);
+
+    //look for doc of userdetails
+    db.doc(`/users/${req.user.username}`).update(userDetails)
+      .then(() => {
+          return res.json({message: 'Details added sucessfully'});
+      })
+      .catch(err => {
+          console.error(err);
+          return res.status(500).json({error: err.code}) //'Details Did Not get added'
+      })
+}
+
+
+//Upload a profile image for user
 //import npm i --save busboy for avatar upload img
 exports.uploadImage = (req,res) => {
     const BusBoy = require('busboy');
@@ -184,3 +204,17 @@ exports.uploadImage = (req,res) => {
     //add to user db, will need key val imgUrl
 
 //TODO add default blank avatar pic, manual upload fb storage, activate storage, upload file, call it no-img.png
+
+exports.reduceUserDetails = (data) => {
+    let userDetails = {};
+    //trim removes white space
+    if(!isEmpty(data.bio.trim()))userDetails.bio = data.bio; //if empty wont have bio property
+    if(!isEmpty(data.website.trim())){
+        //if they subimit https://website.com is fine but not http hardcode http protocol
+        if(data.website.trim().substring(0, 4)!== 'http') {//substring takes start of string and u give it start and end
+        userDetails.website = `http://${data.website.trim()}`;
+        }else userDetails.website = data.website;
+    }
+    if(!isEmpty(data.location.trim()))userDetails.location = data.location;
+    return userDetails;
+}

@@ -13,7 +13,7 @@ const FBAuth = require('./util/fbAuth')
 //REFACTOR ROUTES
 //GET allReacts
 const {getAllReacts, postOneReact} = require('./handlers/reacts'); // ref to get route
-const {signup, login, uploadImage} =  require('./handlers/users');
+const {signup, login, uploadImage, addUserDetails} =  require('./handlers/users');
 
 //const firebase = require('firebase');
     // const config = {
@@ -45,6 +45,10 @@ const {signup, login, uploadImage} =  require('./handlers/users');
 app.get('/reacts', getAllReacts);
 //POST route
 app.post('/react', FBAuth, postOneReact);
+//POST route for images
+app.post('/user/image', FBAuth, uploadImage);
+//POST route for schema
+app.post('/user', FBAuth, addUserDetails);
 
 //USER ROUTES
 //SIGNUP route
@@ -52,7 +56,7 @@ app.post('/signup', signup);
 //LOGIN route
 app.post('/login', login);
 //IMAGE route
-app.post('/user/image', FBAuth, uploadImage)
+
 
 //
 //  (req, res) => {
