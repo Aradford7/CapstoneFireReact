@@ -1,4 +1,4 @@
 # CapstoneFireReact
 
 ## Technologies Used:
-### Backend - Firebase, Express, Node6.js, 
+### Backend - Firebase, Cloud Firestore, Express, Node8.js, 
