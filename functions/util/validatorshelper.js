@@ -49,3 +49,21 @@ exports.validateLoginData = (data) => {
         valid: Object.keys(errors).length === 0 ? true : false
     }
 }
+
+exports.reduceUserDetails = (data) => {
+    let userDetails = {};
+    //trim removes white space
+    if(!isEmpty(data.bio.trim()))userDetails.bio = data.bio; //if empty wont have bio property
+    if(!isEmpty(data.website && data.github.trim())){
+        //if they subimit https://website.com is fine but not http hardcode http protocol
+        if(data.website && data.github.trim().substring(0, 4)!== 'http') {//substring takes start of string and u give it start and end
+        userDetails.website = `http://${data.website.trim()}`;
+        userDetails.github = `http://${data.github.trim()}`;
+        }else{ 
+            userDetails.website = data.website;
+            userDetails.github = data.github;
+        }
+    }
+    if(!isEmpty(data.location.trim()))userDetails.location = data.location;
+    return userDetails;
+}

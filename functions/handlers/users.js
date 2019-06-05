@@ -205,16 +205,3 @@ exports.uploadImage = (req,res) => {
 
 //TODO add default blank avatar pic, manual upload fb storage, activate storage, upload file, call it no-img.png
 
-exports.reduceUserDetails = (data) => {
-    let userDetails = {};
-    //trim removes white space
-    if(!isEmpty(data.bio.trim()))userDetails.bio = data.bio; //if empty wont have bio property
-    if(!isEmpty(data.website.trim())){
-        //if they subimit https://website.com is fine but not http hardcode http protocol
-        if(data.website.trim().substring(0, 4)!== 'http') {//substring takes start of string and u give it start and end
-        userDetails.website = `http://${data.website.trim()}`;
-        }else userDetails.website = data.website;
-    }
-    if(!isEmpty(data.location.trim()))userDetails.location = data.location;
-    return userDetails;
-}
