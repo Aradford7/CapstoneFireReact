@@ -21,7 +21,15 @@ let db = {
             likeCount: 5,
             commentCount: 2
         }
-    ]
+    ],
+    comments:[
+        {
+            userHandle: 'user',
+            reactId: 'asdknadjkan',
+            body: 'test test a comment',
+            createdAt: '2019-06-03T11:16:13.723Z'
+        }
+    ],
 };
 
 const userDetails = {

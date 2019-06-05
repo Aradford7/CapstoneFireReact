@@ -48,3 +48,28 @@ exports.postOneReact = (req, res) => {
             console.error(err);
         });
 }
+
+exports.getReact = (req, res) => {
+    let reactData = {};
+    db.doc(`/reacts/${req.params.reactId}`).get()
+    .then(doc => {
+        if(!doc.exists){
+            return res.status(404).json({error: 'Oh no! React not found!'})
+        }
+        reactData = doc.data();
+        reactData.reactId = doc.id;
+        return db
+        .collection('comments').where('reactId', '==', req.params.reactId).get();
+    })
+    .then(data =>{
+        reactData.comments = [];
+        data.forEach(doc => {
+            reactData.comments.push(doc.data())
+        });
+        return res.json(reactData);
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({error: err.code})
+    })
+}
