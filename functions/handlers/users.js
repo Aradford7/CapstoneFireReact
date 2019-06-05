@@ -148,6 +148,28 @@ exports.addUserDetails = (req, res) => {
       })
 }
 
+//GET own user details
+exports.getAuthenticatedUser = (req,res) => {
+    let userData = {};
+    db.doc(`/users/${req.user.username}`).get()
+        .then(doc => {    //need this check or it will break need to know doc exist
+            if(doc.exists){
+                userData.credentials = doc.data();
+                return db.collection('likes').where('userHandle', '==' , req.user.username).get()
+            }
+        })
+        .then(data => {
+            userData.likes = [];
+            data.forEach(doc => {
+                userData.likes.push (doc.data());
+            });
+            return res.json(userData);
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({error: err.code})
+        })
+}
 
 //Upload a profile image for user
 //import npm i --save busboy for avatar upload img

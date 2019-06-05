@@ -23,3 +23,28 @@ let db = {
         }
     ]
 };
+
+const userDetails = {
+    //Redux data
+    credentials: {
+        userId: 'jaknsdjndjanakjndajndjkandjandjknajkdas',
+        email: 'user@email.com',
+        username: 'user',
+        createdAt: '2019-06-03T11:16:13.723Z',
+        imageUrl: 'image/daskdnajdnasjkd',
+        bio: 'Hello, my name is user, I am default in the backend db',
+        website: 'https://user.com',
+        github: 'https:user.github.com',
+        location: 'Los Angeles, CA'
+    },
+    likes: [
+        {
+            userHandle: 'user',
+            reactId: 'kajsndjkandsajkdnkajd'
+        },
+        {
+            userHandle: 'user',
+            reactId: 'askndjkansdjkandkj'
+        }
+    ]
+}
