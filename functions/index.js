@@ -4,20 +4,60 @@ const FBAuth = require('./util/fbAuth')
 
 //REFACTOR ROUTES
 //GET allReacts
-const {getAllReacts, postOneReact} = require('./handlers/reacts'); // ref to react route
-const {signup, login} =  require('./handlers/users'); //ref to user routes
+
+const {getAllReacts, postOneReact} = require('./handlers/reacts'); // ref to get route
+const {
+    signup, 
+    login, 
+    uploadImage, 
+    addUserDetails, 
+    getAuthenticatedUser} =  require('./handlers/users');
+
+//const firebase = require('firebase');
+    // const config = {
+    //     apiKey: "AIzaSyDNlgU-vShGYd69xVRO5Jvi3bLBkOOgkxQ",
+    //     authDomain: "reacttomyreactapp.firebaseapp.com",
+    //     databaseURL: "https://reacttomyreactapp.firebaseio.com",
+    //     projectId: "reacttomyreactapp",
+    //     storageBucket: "reacttomyreactapp.appspot.com",
+    //     messagingSenderId: "388845875731",
+    //     appId: "1:388845875731:web:d93b7fa3f02f69e7"
+    //   };
+//firebase.initializeApp(config);
+
+// const db = admin.firestore(); //where we need firestore use db.
+ //pass in config stuff from firebase console
+// // Create and Deploy Your First Cloud Functions
+// // https://firebase.google.com/docs/functions/write-firebase-functions
+
+//1. test firebase serve to see url /check in postman
+// exports.helloWorld = functions.https.onRequest((request, response) => {
+//  response.send("Hello World from Jae!");
+// });
+
+//2. create db in firebase 
+//3. try to fetch these from db with postman
+
 
 //REACT ROUTES
 //GET route
 app.get('/reacts', getAllReacts);
 //POST route
 app.post('/react', FBAuth, postOneReact);
+//POST route for images
+app.post('/user/image', FBAuth, uploadImage);
+//POST route for userData
+app.post('/user', FBAuth, addUserDetails);
+//GET route for userData
+app.get('/user', FBAuth, getAuthenticatedUser);
 
 //USER ROUTES
 //SIGNUP route
 app.post('/signup', signup); 
 //LOGIN route
 app.post('/login', login);
+//IMAGE route
+
 
 //API
 exports.api = functions.https.onRequest(app); 

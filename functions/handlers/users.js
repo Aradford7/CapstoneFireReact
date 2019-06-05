@@ -1,20 +1,21 @@
-const {db} =  require('../util/admin');
+const {db, admin} =  require('../util/admin');
 
 const config = require('../util/config');
 
 const firebase = require('firebase');
 firebase.initializeApp(config)
 
-const {validateSignUpData, validateLoginData} = require('../util/validatorshelper')
+const {validateSignUpData, validateLoginData, reduceUserDetails} = require('../util/validatorshelper')
 
 
+//sign up for user
 exports.signup = (req, res) => {
     const newUser = {
         email: req.body.email,
         password: req.body.password,
         confirmPassword: req.body.confirmPassword,
         username: req.body.username, 
-    };
+    }
 
     // let errors = {};
 
@@ -35,6 +36,8 @@ exports.signup = (req, res) => {
     const {valid, errors} = validateSignUpData(newUser);
 
     if (!valid) return res.status(400).json(errors); //conditional checking if valid
+
+    const noImg = 'no-img.png'
 
     let token, userId;
     db.doc(`/users/${newUser.username}`)
@@ -58,8 +61,9 @@ exports.signup = (req, res) => {
             username: newUser.username,
             email: newUser.email,
             createdAt: new Date().toISOString(),
+            imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
             userId
-        };
+        }
         return db.doc(`/users/${newUser.username}`).set(userCredentials); 
     })
     .then (() => {
@@ -86,14 +90,16 @@ exports.signup = (req, res) => {
     });
 }
 
+//Login for user
 exports.login = (req,res) => {
     const user = {
+        //username: req.body.username,
         email: req.body.email,
         password: req.body.password
     };
 
     //add valid fx  by destructuring
-    const {valid, errors} = validateLoginData(User);
+    const {valid, errors} = validateLoginData(user);
 
     if (!valid) return res.status(400).json(errors); //conditional checking if valid
 
@@ -124,3 +130,100 @@ exports.login = (req,res) => {
             else return res.status(500).json({error: err.code});
         });
 }
+
+
+
+//Add userDetails fx (bio,location,website,github,username,email)
+exports.addUserDetails = (req, res) => {
+    let userDetails = reduceUserDetails(req.body);
+
+    //look for doc of userdetails
+    db.doc(`/users/${req.user.username}`).update(userDetails)
+      .then(() => {
+          return res.json({message: 'Details added sucessfully'});
+      })
+      .catch(err => {
+          console.error(err);
+          return res.status(500).json({error: err.code}) //'Details Did Not get added'
+      })
+}
+
+//GET own user details
+exports.getAuthenticatedUser = (req,res) => {
+    let userData = {};
+    db.doc(`/users/${req.user.username}`).get()
+        .then(doc => {    //need this check or it will break need to know doc exist
+            if(doc.exists){
+                userData.credentials = doc.data();
+                return db.collection('likes').where('userHandle', '==' , req.user.username).get()
+            }
+        })
+        .then(data => {
+            userData.likes = [];
+            data.forEach(doc => {
+                userData.likes.push (doc.data());
+            });
+            return res.json(userData);
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({error: err.code})
+        })
+}
+
+//Upload a profile image for user
+//import npm i --save busboy for avatar upload img
+exports.uploadImage = (req,res) => {
+    const BusBoy = require('busboy');
+    const path = require('path');
+    const os =  require('os');
+    const fs = require('fs');
+
+
+    const busboy = new BusBoy({headers:req.headers}); //need all the callbacks mainly file encoding mimetype
+
+    let imageToBeUploaded = {};
+    let imageFileName;
+
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        console.log(fieldname, filename, encoding,mimetype);
+        //extract by getting the extention jpeg or png
+        if (mimetype !== 'image/jpeg' && mimetype !== 'image/png'){
+            return res.status(400).json({error: 'Wrong file type. Try a different type.'})
+        }
+        const imageExtension = filename.split('.')[filename.split('.').length -1]; //-1 for last file index
+        imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
+        const filepath = path.join(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
+        imageToBeUploaded = {filepath, mimetype};
+        file.pipe(fs.createWriteStream(filepath));
+    });
+    busboy.on('finish', () => {
+        admin
+            .storage()
+            .bucket()
+            .upload(imageToBeUploaded.filepath, {
+            resumeable: false,
+            metadata: {
+                metadata: {
+                    contentType: imageToBeUploaded.mimetype
+                }
+            }
+        })
+        .then(() => {
+            const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
+            return db.doc(`/users/${req.user.username}`).update({imageUrl}); //imageUrl = field:val
+        })
+        .then(() => {
+            return res.json({message: 'Image uploaded successfully'});
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({error: 'Something went wrong. Uploading image has failed.'});
+        })
+    });
+    busboy.end(req.rawBody);
+}; // image is stored to firebase via config script fb gives, need alt=media so u can see pic instead of it being downloaded to pc
+    //add to user db, will need key val imgUrl
+
+//TODO add default blank avatar pic, manual upload fb storage, activate storage, upload file, call it no-img.png
+
