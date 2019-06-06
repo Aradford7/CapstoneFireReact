@@ -30,6 +30,16 @@ let db = {
             createdAt: '2019-06-03T11:16:13.723Z'
         }
     ],
+    notifications: [
+        {
+            recipent: 'user',
+            sender: 'kupo',
+            read: 'true | false',
+            reactId: 'kansdjkandjand',
+            type: 'like | comment',
+            createdAt: '2019-06-03T11:16:13.723Z'
+        }
+    ],
 };
 
 const userDetails = {
