@@ -102,6 +102,9 @@ exports.commentOnReact = (req,res) =>{
         if(!doc.exists){
             return res.status(404).json({error: 'React not found'});
         }
+        return doc.ref.update({commentCount: doc.data().commentCount +1});
+    })
+    .then(()=> {
         return db.collection('comments').add(newComment);
     })
     .then(() => {
@@ -197,5 +200,29 @@ exports.unlikeReact = (req, res) => {
     .catch(err => {
         console.error(err)
         res.status(500).json({error: err.code});
+    })
+}
+
+//Delete React
+
+exports.deleteReact = (req, res) => {
+    const document = db.doc(`/reacts/${req.params.reactId}`);
+    document.get()
+    .then(doc => {
+        if(!doc.exists){
+            return res.status(404).json({error: 'React not found.'});
+        }
+        if(doc.data().userHandle !== req.user.username){
+            return res.status(403).json({error: 'Unauthorized'});
+        }else{
+            return document.delete();
+        }
+    })
+    .then(() => {
+        res.json({message: 'React deleted successfully!'});
+    })
+    .catch(err => {
+        console.error(err);
+        return res.status(500).json({error: err.code});
     })
 }
