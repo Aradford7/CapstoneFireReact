@@ -48,9 +48,11 @@ exports.postOneReact = (req, res) => {
         });
 }
 
+//fetch 1 React
 exports.getReact = (req, res) => {
     let reactData = {};
-    db.doc(`/reacts/${req.params.reactId}`).get()
+    db.doc(`/reacts/${req.params.reactId}`)
+    .get()
     .then(doc => {
         if(!doc.exists){
             return res.status(404).json({error: 'Oh no! React not found!'})
@@ -58,17 +60,50 @@ exports.getReact = (req, res) => {
         reactData = doc.data();
         reactData.reactId = doc.id;
         return db
-        .collection('comments').where('reactId', '==', req.params.reactId).get();
+        .collection('comments')
+        .orderBy('createdAt', 'desc')
+        .where('reactId', '==', req.params.reactId)
+        .get();
     })
     .then(data =>{
         reactData.comments = [];
         data.forEach(doc => {
-            reactData.comments.push(doc.data())
+            reactData.comments.push(doc.data());
         });
         return res.json(reactData);
     })
     .catch(err => {
         console.error(err);
         res.status(500).json({error: err.code})
+    })
+}
+
+//Comment on a comment
+
+exports.commentOnReact = (req,res) =>{
+    if(req.body.body.trim() === '')return res.status(400).json({comment: 'Must not be empty'});
+
+    const newComment = {
+        body: req.body.body,
+        createdAt: new Date().toString(),
+        reactId: req.params.reactId,
+        userHandle: req.user.username,
+        userImage: req.user.imageUrl
+    };
+    console.log(newComment);
+
+    db.doc(`/reacts/${req.params.reactId}`).get()
+    .then(doc => {
+        if(!doc.exists){
+            return res.status(404).json({error: 'React not found'});
+        }
+        return db.collection('comments').add(newComment);
+    })
+    .then(() => {
+        res.json(newComment);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({error: 'Oh no! Something went wrong!'})
     })
 }
