@@ -33,14 +33,19 @@ exports.postOneReact = (req, res) => {
     const newReact = {
         body: req.body.body, 
         userHandle: req.user.username,
-        createdAt: new Date().toISOString() 
+        userImage: req.user.imageUrl,
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        commentCount: 0
     
     };
    
       db.collection('reacts')
         .add(newReact)
         .then((doc) => {
-            res.json({message: `Document ${doc.id} created Sucessfully!`});
+            const responseReact = newReact;
+            responseReact.reactId = doc.id; 
+            res.json(responseReact);
         })
         .catch(err => {
             res.status(500).json({error:'Oh no! Something went wrong!'});
