@@ -5,7 +5,11 @@ const config = require('../util/config');
 const firebase = require('firebase');
 firebase.initializeApp(config)
 
-const {validateSignUpData, validateLoginData, reduceUserDetails} = require('../util/validatorshelper')
+const {
+    validateSignUpData, 
+    validateLoginData, 
+    reduceUserDetails
+} = require('../util/validatorshelper')
 
 
 //sign up for user
@@ -26,16 +30,17 @@ exports.signup = (req, res) => {
 
     let token, userId;
     db.doc(`/users/${newUser.username}`)
-    .get() //fx to check if username already exist
-    .then(doc => {
+     .get() //fx to check if username already exist
+     .then(doc => {
         if(doc.exists){
-            return res.status(400).json({username: 'This username is already taken.'});
+            return res.status(400).json({username: 'This username is already taken'});
         }else{
             return firebase
-        .auth()
-        .createUserWithEmailAndPassword(newUser.email, newUser.password)
+            .auth()
+            .createUserWithEmailAndPassword(newUser.email, newUser.password);
         }
-    }) //chain promise for access token so user cna request more data
+    }) 
+    //chain promise for access token so user cna request more data
     .then(data =>{
         userId = data.user.uid;
         return data.user.getIdToken();
@@ -54,17 +59,6 @@ exports.signup = (req, res) => {
     .then (() => {
         return res.status(201).json({token}); //delete entire collections check in postman
     })
-    // SHOuld return a token when postman create a new user
-        // works see token
-        //user already exist see username already exist
-    // firebase
-    // .auth()
-    // .createUserWithEmailAndPassword(newUser.email, newUser.password)
-    // .then((data) => {
-    //     return res
-    //     .status(201)
-    //     .json({message: `user ${data.user.uid} signed up sucessfully!`});
-    // })
     .catch(err => {
         console.error(err);
         if (err.code == 'auth/email-already-in-use'){
@@ -78,6 +72,7 @@ exports.signup = (req, res) => {
 //Login for user
 exports.login = (req,res) => {
     const user = {
+        //form id info
         //username: req.body.username,
         email: req.body.email,
         password: req.body.password
@@ -88,7 +83,6 @@ exports.login = (req,res) => {
 
     if (!valid) return res.status(400).json(errors); //conditional checking if valid
 
-   
 
     firebase
         .auth()
