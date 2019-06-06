@@ -9,7 +9,10 @@ const {
     getAllReacts, 
     postOneReact,
     getReact,
-    commentOnReact} = require('./handlers/reacts'); // ref to get route
+    deleteReact,
+    commentOnReact,
+    likeReact,
+    unlikeReact} = require('./handlers/reacts'); // ref to get route
 
 const {
     signup, 
@@ -26,9 +29,14 @@ app.get('/reacts', getAllReacts);
 app.post('/react', FBAuth, postOneReact);
 //GET 1 react
 app.get('/react/:reactId', getReact);
+//DELETE route react
+app.delete('/react/:reactId', FBAuth, deleteReact);
 //POST comment on react
 app.post('/react/:reactId/comment', FBAuth, commentOnReact);
-//TODO: delete react, like a react, unlike a react, 
+//GET route for likes/unlikes
+app.get('/react/:reactId/like', FBAuth, likeReact);
+app.get('/react/:reactId/unlike', FBAuth, unlikeReact);
+
 
 
 
