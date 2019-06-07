@@ -74,8 +74,9 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
         return db
          .doc(`/reacts/${snapshot.data().reactId}`).get()
          //snapshot is a of this liked doc been created
-         .then(doc => {
-             if(doc.exists){
+         .then((doc) => {
+             if(doc.exists && 
+                doc.data().userHandle !== snapshot.data().userHandle){
                  return db.doc(`/notifications/${snapshot.id}`).set({
                      reactId: doc.id,
                      createdAt: new Date().toISOString(),
@@ -85,9 +86,6 @@ exports.createNotificationOnLike = functions.firestore.document('likes/{id}')
                      read: false,
                  });
              }
-         })
-         .then(() => {
-             return;
          })
          .catch(err => {
              console.error(err, 'notification didnt create');
@@ -130,6 +128,62 @@ exports.createNotificationOnComment = functions.firestore.document(`comments/{id
              return;
          })
     });
+    
 
 
-    //notications on like and comment, need to do unlike post delete notification.
+//change all the image on every react when user change profile pic
+exports.onUserImageChange = functions.firestore.document('/users/{userId}')
+    .onUpdate((change) =>  {
+        console.log(change.before.data());
+        console.log(change.after.data());
+        if(change.before.data().imageUrl !== change.after.data().imageUrl){
+            console.log('image has changed');
+            let batch = db.batch();
+            return db
+                .collection('reacts')
+                .where('userHandle', '==', change.before.data().username)
+                .get()
+                .then((data) => {
+                    data.forEach(doc => {
+                        const react = db.doc(`/reacts/${doc.id}`);
+                        batch.update(react, {userImage: change.after.data().imageUrl});
+                    })
+                    return batch.commit();
+                });
+            }
+    });
+
+exports.onReactDelete = functions.firestore.document('/users/{userId}')
+    .onDelete((snapshot, context) => {
+        const reactId = context.params.reactId; //context in the url
+        const batch = db.batch();
+        return db.collection('comments').where('reactId', '==', reactId).get()
+            .then(data => {
+                data.forEach(doc => {
+                    batch.delete(db.doc(`/comments/${doc.id}`));
+                })
+                return db.collection('likes').where('reactId', '==', reactId).get();
+            })
+            .then(data => {
+                data.forEach(doc => {
+                    batch.delete(db.doc(`/likes/${doc.id}`));
+                })
+                return db.collection('notifications').where('reactId', '==', reactId).get();
+            })
+            .then(data => {
+                data.forEach(doc => {
+                    batch.delete(db.doc(`/notifications/${doc.id}`));
+                })
+                return batch.commit();
+            })
+            .catch(err => console.error(err));
+    })
+
+    //change has two properties, need batch to change multiple files 
+    //need to deploy cuz fb triggers
+        //triggers can change stuff in db and it trigger db
+
+
+
+//POSTMAN SAVE
+//https://firestore.googleapis.com/v1/projects/reacttomyreactapp/databases/(default)/documents/users
