@@ -137,7 +137,7 @@ exports.getUserDetails = (req, res) => {
       .then((data) => {
           userData.reacts = [];
           data.forEach((doc) => {
-              userData.react.push({
+              userData.reacts.push({
                   body: doc.data().body,
                   createdAT: doc.data().createdAT,
                   userHandle: doc.data().userHandle,
@@ -249,3 +249,20 @@ exports.uploadImage = (req,res) => {
 
 //TODO add default blank avatar pic, manual upload fb storage, activate storage, upload file, call it no-img.png
 
+exports.markNotificationsRead = (req, res) => {
+    let batch = db.batch();
+    req.body.forEach(notificationId => {
+        const notification = db.doc(`/notifications/${notificationId}`);
+        batch.update(notification, {read:true});
+    });
+    batch.commit()
+        .then(() => {
+            return res.json({message: 'Notifications marked read'});
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({error: err.code});
+        })
+    }
+
+//batch right let u update multiple things with firebase

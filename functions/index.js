@@ -24,8 +24,8 @@ const {
     uploadImage, 
     addUserDetails, 
     getAuthenticatedUser,
-    getUserDetails
-    //markNotificationsRead
+    getUserDetails,
+    markNotificationsRead
 } =  require('./handlers/users');
 
 
@@ -60,7 +60,7 @@ app.post('/user', FBAuth, addUserDetails);
 app.get('/user', FBAuth, getAuthenticatedUser);
 //GET userDetails
 app.get('/user/:username', getUserDetails);
-//app.post('/notifications', FBAuth, markNotificationsRead);
+app.post('/notifications', FBAuth, markNotificationsRead);
 
 
 //API
