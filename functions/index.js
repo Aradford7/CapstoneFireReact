@@ -23,7 +23,10 @@ const {
     login, 
     uploadImage, 
     addUserDetails, 
-    getAuthenticatedUser} =  require('./handlers/users');
+    getAuthenticatedUser,
+    getUserDetails
+    //markNotificationsRead
+} =  require('./handlers/users');
 
 
 //REACT ROUTES
@@ -55,6 +58,9 @@ app.post('/user/image', FBAuth, uploadImage);
 app.post('/user', FBAuth, addUserDetails);
 //GET route for userData
 app.get('/user', FBAuth, getAuthenticatedUser);
+//GET userDetails
+app.get('/user/:username', getUserDetails);
+//app.post('/notifications', FBAuth, markNotificationsRead);
 
 
 //API

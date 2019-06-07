@@ -120,21 +120,70 @@ exports.addUserDetails = (req, res) => {
           return res.status(500).json({error: err.code}) //'Details Did Not get added'
       })
 }
-
+//GET any user details
+exports.getUserDetails = (req, res) => {
+    let userData = {};
+    db.doc(`/users/${req.params.username}`).get()
+      .then((doc) => {
+          if(doc.exists){
+              userData.user = doc.data();
+              return db.collection('reacts').where('userHandle', '==', req.params.username)
+                .orderBy('createdAt', 'desc')
+                .get();
+          }else{
+              return res.status(404).json({error: 'Oh no! User not found!'})
+          }
+      })
+      .then((data) => {
+          userData.reacts = [];
+          data.forEach((doc) => {
+              userData.react.push({
+                  body: doc.data().body,
+                  createdAT: doc.data().createdAT,
+                  userHandle: doc.data().userHandle,
+                  userImage: doc.data().userImage,
+                  likeCount: doc.data().likeCount,
+                  commentCount: doc.data().commentCount,
+                  reactId: doc.id
+              })
+          });
+          return res.json(userData);
+      })
+      .catch(err => {
+          console.error(err);
+          return res.status(500).json({error: err.code})
+      })
+}
 //GET own user details
 exports.getAuthenticatedUser = (req,res) => {
     let userData = {};
     db.doc(`/users/${req.user.username}`).get()
-        .then(doc => {    //need this check or it will break need to know doc exist
+        .then((doc) => {    //need this check or it will break need to know doc exist
             if(doc.exists){
                 userData.credentials = doc.data();
                 return db.collection('likes').where('userHandle', '==' , req.user.username).get()
             }
         })
-        .then(data => {
+        .then((data) => {
             userData.likes = [];
             data.forEach(doc => {
                 userData.likes.push (doc.data());
+            });
+            return db.collection('notifications').where('recipient', '==', req.user.username)
+                .orderBy('createdAt', 'desc').limit(10).get();
+        })
+        .then((data) => {
+            userData.notifications =[];
+            data.forEach(doc => {
+                userData.notifications.push({
+                    recipient: doc.data().recipient,
+                    sender: doc.data().sender,
+                    createdAt: doc.data().createdAt,
+                    reactId: doc.data().reactId,
+                    type: doc.data().type,
+                    read: doc.data().read,
+                    notificationsId: doc.id
+                })
             });
             return res.json(userData);
         })
