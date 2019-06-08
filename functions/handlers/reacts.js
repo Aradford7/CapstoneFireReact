@@ -45,6 +45,7 @@ exports.postOneReact = (req, res) => {
       db.collection('reacts')
         .add(newReact)
         .then((doc) => {
+            console.log(newReact)
             const responseReact = newReact;
             responseReact.reactId = doc.id; 
             res.json(responseReact);
