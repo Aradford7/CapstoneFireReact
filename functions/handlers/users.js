@@ -90,10 +90,10 @@ exports.login = (req,res) => {
         .then(data => {
             return data.user.getIdToken();
         })
-        .then(token => {
+        .then((token) => {
             return res.json({token});
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
                 return res
                 .status(403)
