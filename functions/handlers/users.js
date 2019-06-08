@@ -31,7 +31,7 @@ exports.signup = (req, res) => {
     let token, userId;
     db.doc(`/users/${newUser.username}`)
      .get() //fx to check if username already exist
-     .then(doc => {
+     .then((doc) => {
         if(doc.exists){
             return res.status(400).json({username: 'This username is already taken'});
         }else{
@@ -64,7 +64,7 @@ exports.signup = (req, res) => {
         if (err.code == 'auth/email-already-in-use'){
             return res.status(400).json({email: 'Email is already in use.'}); 
         }else{
-        return res.status(500).json({error: err.code});
+        return res.status(500).json({general: 'Something went wrong, please try again :('});
         }
     });
 }
@@ -90,17 +90,14 @@ exports.login = (req,res) => {
         .then(data => {
             return data.user.getIdToken();
         })
-        .then(token => {
+        .then((token) => {
             return res.json({token});
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
-            if(err.code === 'auth/wrong-password'){
                 return res
                 .status(403)
                 .json({general: 'Wrong password or email, please try again'});
-            } 
-            else return res.status(500).json({error: err.code});
         });
 }
 
@@ -215,6 +212,7 @@ exports.uploadImage = (req,res) => {
         }
         const imageExtension = filename.split('.')[filename.split('.').length -1]; //-1 for last file index
         imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
+        
         const filepath = path.join(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
         imageToBeUploaded = {filepath, mimetype};
         file.pipe(fs.createWriteStream(filepath));

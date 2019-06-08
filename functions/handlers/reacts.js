@@ -13,8 +13,10 @@ exports.getAllReacts =  (req, res) => {
               reactId: doc.id,
               body: doc.data().body,
               userHandle: doc.data().userHandle,
-              createdAt: doc.data().createdAt  
-              
+              createdAt: doc.data().createdAt,
+              commentCount: doc.data().commentCount,
+              likeCount: doc.data().likeCount,
+              userImage: doc.data().userImage  
           });
       });  
       return res.json(reacts);
@@ -43,6 +45,7 @@ exports.postOneReact = (req, res) => {
       db.collection('reacts')
         .add(newReact)
         .then((doc) => {
+            console.log(newReact)
             const responseReact = newReact;
             responseReact.reactId = doc.id; 
             res.json(responseReact);
