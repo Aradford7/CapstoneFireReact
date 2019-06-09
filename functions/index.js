@@ -2,8 +2,8 @@ const functions = require('firebase-functions');
 const app = require('express')();
 const FBAuth = require('./util/fbAuth')
 
-// const cors = require('cors');
-// app.use(cors());
+const cors = require('cors');
+app.use(cors());
 
 const {db} = require('./util/admin')
 //REFACTOR ROUTES
@@ -132,7 +132,8 @@ exports.createNotificationOnComment = functions.firestore.document(`comments/{id
 
 
 //change all the image on every react when user change profile pic
-exports.onUserImageChange = functions.firestore.document('/users/{userId}')
+exports.onUserImageChange = functions
+    .firestore.document('/users/{userId}')
     .onUpdate((change) =>  {
         console.log(change.before.data());
         console.log(change.after.data());
@@ -144,7 +145,7 @@ exports.onUserImageChange = functions.firestore.document('/users/{userId}')
                 .where('userHandle', '==', change.before.data().username)
                 .get()
                 .then((data) => {
-                    data.forEach(doc => {
+                    data.forEach((doc) => {
                         const react = db.doc(`/reacts/${doc.id}`);
                         batch.update(react, {userImage: change.after.data().imageUrl});
                     })
