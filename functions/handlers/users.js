@@ -190,8 +190,7 @@ exports.getAuthenticatedUser = (req,res) => {
         })
 }
 
-//Upload a profile image for user
-//import npm i --save busboy for avatar upload img
+
 exports.uploadImage = (req,res) => {
     const BusBoy = require('busboy');
     const path = require('path');
@@ -200,6 +199,7 @@ exports.uploadImage = (req,res) => {
 
 
     const busboy = new BusBoy({headers:req.headers}); 
+
     let imageToBeUploaded = {};
     let imageFileName;
 
@@ -209,7 +209,7 @@ exports.uploadImage = (req,res) => {
             return res.status(400).json({error: 'Wrong file type. Try a different type.'});
         }
         const imageExtension = filename.split('.')[filename.split('.').length -1]; 
-        imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
+        imageFileName = `${Math.round(Math.random()*100000000000).toString()}.${imageExtension}`;
         
         const filepath = path.join(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
         imageToBeUploaded = {filepath, mimetype};
