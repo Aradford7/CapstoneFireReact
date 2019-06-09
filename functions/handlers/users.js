@@ -41,11 +41,11 @@ exports.signup = (req, res) => {
         }
     }) 
     //chain promise for access token so user cna request more data
-    .then(data =>{
+    .then((data) =>{
         userId = data.user.uid;
         return data.user.getIdToken();
     })
-    .then(idToken => {
+    .then((idToken) => {
         token = idToken;
         const userCredentials = {
             username: newUser.username,
@@ -199,18 +199,16 @@ exports.uploadImage = (req,res) => {
     const fs = require('fs');
 
 
-    const busboy = new BusBoy({headers:req.headers}); //need all the callbacks mainly file encoding mimetype
-
+    const busboy = new BusBoy({headers:req.headers}); 
     let imageToBeUploaded = {};
     let imageFileName;
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
         console.log(fieldname, filename, encoding,mimetype);
-        //extract by getting the extention jpeg or png
         if (mimetype !== 'image/jpeg' && mimetype !== 'image/png'){
-            return res.status(400).json({error: 'Wrong file type. Try a different type.'})
+            return res.status(400).json({error: 'Wrong file type. Try a different type.'});
         }
-        const imageExtension = filename.split('.')[filename.split('.').length -1]; //-1 for last file index
+        const imageExtension = filename.split('.')[filename.split('.').length -1]; 
         imageFileName = `${Math.round(Math.random()*100000000000) }.${imageExtension}`;
         
         const filepath = path.join(os.tmpdir(), imageFileName); //tmpdir is cloud function temporary directory
